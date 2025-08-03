@@ -1,0 +1,11 @@
+ HaloaistudiosHub/
+├── frontend/          → Astro project
+├── backend/           → Flask, Firebase, Supabase (placeholder for now)
+├── cli/               → CLI tools
+├── data/              → Configs / JSON / YAML
+├── logs/              → Script logs
+├── public/            → Shared assets
+├── README.md          → Auto-generated
+├── haloaistudios.sh   → Master CLI runner
+├── setup.sh           → SUPER SCRIPT (below)
+├── haloaistudios.zip  → Auto-ZIP created
