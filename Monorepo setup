@@ -9,3 +9,26 @@
 ├── haloaistudios.sh   → Master CLI runner
 ├── setup.sh           → SUPER SCRIPT (below)
 ├── haloaistudios.zip  → Auto-ZIP created
+
+
+/haloai-projects
+│
+├── /eaib
+│   ├── frontend/            # React/Tailwind (or Vite/Vanilla)
+│   ├── backend/             # Flask API or Node backend
+│   ├── data/                # JSON/YAML character roster, assets
+│   ├── config/              # Environment, routes, constants
+│   └── README.md
+│
+├── /motivabot
+│   ├── frontend/
+│   ├── backend/
+│   ├── data/
+│   ├── config/
+│   └── README.md
+│
+├── /archive-zips/           # Auto-generated ZIP exports for each build
+├── workspace-main.md        # You are here (project docs and progress)
+├── deploy.sh                # One-click deploy (Termux/Vercel/Firebase)
+├── README.md                # Master ReadMe (Monorepo)
+└── .gitignore
