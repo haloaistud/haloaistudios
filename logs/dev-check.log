@@ -1,0 +1,18 @@
+📂 Navigating to repo root: /data/data/com.termux/files/home/git/haloaistudios
+📁 Found frontend folder.
+🔍 Checking package.json for 'dev' script...
+✅ Dev script found in package.json.
+📦 Installing NPM modules...
+npm warn using --force Recommended protections disabled.
+
+up to date, audited 285 packages in 9s
+
+140 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> frontend@0.0.1 dev
+> astro dev --no-open --no-clear-screen
+
+✅ Dev server running at http://localhost:4321
