@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HaloAI - Neon Glass Context Menu</title>
+    <link href="https://fonts.bunny.net/css?family=asap:200,300,400,500,600,700,800,900" rel="stylesheet">
+    <style>
+        :root {
+            --hue1: 255;
+            --hue2: 222;
+            --border: 1px;
+            --border-color: hsl(var(--hue2), 12%, 20%);
+            --radius: 22px;
+            --ease: cubic-bezier(0.5, 1, 0.89, 1);
+            --fg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Asap', sans-serif;
+            background: #08090d;
+            background-image: 
+                linear-gradient(135deg, rgba(0,255,255,0.1) 0%, transparent 50%), 
+                linear-gradient(45deg, rgba(255,0,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 20% 80%, rgba(120,119,198,0.3), transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,119,198,0.3), transparent 50%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--fg);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .header {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, hsl(var(--hue1) 80% 70%), hsl(var(--hue2) 80% 70%));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .instructions {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            backdrop-filter: blur(10px);
+        }
+
+        .instructions h3 {
+            color: hsl(var(--hue1) 80% 70%);
+            margin-bottom: 1rem;
+        }
+
+        .project-nav {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .project-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(0,0,0,0.3);
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .controls h3 {
+            color: hsl(var(--hue2) 80% 70%);
+        }
+
+        .color-control {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .color-control label {
+            min-width: 80px;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.2);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, hsl(var(--hue1) 80% 60%), hsl(var(--hue2) 80% 60%));
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        /* Context Menu Styles */
+        #contextMenu {
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition-property: visibility, opacity, filter;
+            transition-duration: 0s, 0.25s, 0.25s;
+            transition-delay: 0.5s, 0s, 0s;
+            transition-timing-function: var(--ease);
+            filter: blur(4px);
+            
+            font-family: 'Asap', sans-serif;
+            color: #737985;
+            
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 275px;
+            min-height: 275px;
+            border-radius: var(--radius);
+            border: var(--border) solid var(--border-color);
+            padding: 1em;
+            background: linear-gradient(235deg, hsl(var(--hue1) 50% 10% / 0.8), hsl(var(--hue1) 50% 10% / 0) 33%), 
+                       linear-gradient(45deg , hsl(var(--hue2) 50% 10% / 0.8), hsl(var(--hue2) 50% 10% / 0) 33%), 
+                       linear-gradient(hsl(220deg 25% 4.8% / 0.66));
+            backdrop-filter: blur(12px);
+            box-shadow: hsl(var(--hue2) 50% 2%) 0px 10px 16px -8px, hsl(var(--hue2) 50% 4%) 0px 20px 36px -14px;
+            z-index: 1000;
+        }
+
+        #contextMenu:not(.open)::before,
+        #contextMenu:not(.open)::after,
+        #contextMenu:not(.open) .glow {
+            opacity: 0;
+            pointer-events: none;
+            animation: glowoff 0.25s var(--ease) both;
+        }
+
+        #contextMenu.open {
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+            transition-delay: 0s;
+            filter: blur(0px);
+        }
+
+        #contextMenu.open .shine,
+        #contextMenu.open .glow {
+            animation: glow 1s var(--ease) both;
+        }
+
+        #contextMenu.open .shine {
+            animation-delay: 0s;
+            animation-duration: 2s;
+        }
+
+        #contextMenu.open .glow {
+            animation-delay: 0.2s;
+        }
+
+        #contextMenu.open .glow-bright {
+            animation-delay: 0.1s;
+            animation-duration: 1.5s;
+        }
+
+        #contextMenu.open .shine-bottom {
+            animation-delay: 0.1s;
+            animation-duration: 1.8s;
+        }
+
+        #contextMenu.open .glow-bottom {
+            animation-delay: 0.3s;
+        }
+
+        #contextMenu.open .glow-bright.glow-bottom {
+            animation-delay: 0.3s;
+            animation-duration: 1.1s;
+        }
+
+        .shine, .glow {
+            --hue: var(--hue1);
+        }
+
+        .shine-bottom, .glow-bottom {
+            --hue: var(--hue2);
+            --conic: 135deg;
+        }
+
+        .shine,
+        .shine::before,
+        .shine::after {
+            pointer-events: none;
+            border-radius: 0;
+            border-top-right-radius: inherit;
+            border-bottom-left-radius: inherit;
+            border: 1px solid transparent;
+            
+            width: 75%;
+            height: auto;
+            min-height: 0px;
+            aspect-ratio: 1;
+            display: block;
+            position: absolute;
+            right: calc(var(--border) * -1);
+            top: calc(var(--border) * -1);
+            left: auto;
+            
+            z-index: 1;
+            
+            --start: 12%;
+            background: conic-gradient(
+                from var(--conic, -45deg) at center,
+                transparent var(--start,0%), 
+                hsl(var(--hue), var(--sat,80%), var(--lit,60%)), 
+                transparent var(--end,50%) 
+            ) border-box;
+            
+            mask: linear-gradient(transparent), linear-gradient(black);
+            mask-repeat: no-repeat;
+            mask-clip: padding-box, border-box;
+            mask-composite: subtract;
+        }
+
+        .shine::before,
+        .shine::after {
+            content: "";
+            width: auto;
+            inset: -2px;
+            mask: none;
+        }
+            
+        .shine::after { 
+            z-index: 2;
+            --start: 17%;
+            --end: 33%;
+            background: conic-gradient(
+                from var(--conic, -45deg) at center,
+                transparent var(--start,0%), 
+                hsl(var(--hue), var(--sat,80%), var(--lit,85%)), 
+                transparent var(--end,50%) 
+            );
+        }
+
+        .shine-bottom {
+            top: auto;
+            bottom: calc(var(--border) * -1);
+            left: calc(var(--border) * -1);
+            right: auto;
+        }
+
+        .glow {
+            pointer-events: none;
+            border-top-right-radius: calc(var(--radius) * 2.5);
+            border-bottom-left-radius: calc(var(--radius) * 2.5);
+            border: calc(var(--radius) * 1.25) solid transparent;
+            inset: calc(var(--radius) * -2);
+            
+            width: 75%;
+            height: auto;
+            min-height: 0px;
+            aspect-ratio: 1;
+            display: block;
+            position: absolute;
+            left: auto;
+            bottom: auto;
+            
+            opacity: 1;
+            filter: blur(12px) saturate(1.25) brightness(0.5);
+            mix-blend-mode: plus-lighter;
+            z-index: 3;
+        }
+
+        .glow.glow-bottom {
+            inset: calc(var(--radius) * -2);
+            top: auto;
+            right: auto;
+        }
+
+        .glow::before, 
+        .glow::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border: inherit;
+            border-radius: inherit;
+            background: conic-gradient(
+                from var(--conic, -45deg) at center,
+                transparent var(--start,0%), 
+                hsl(var(--hue), var(--sat,95%), var(--lit,60%)), 
+                transparent var(--end,50%) 
+            ) border-box;
+            mask: linear-gradient(transparent), linear-gradient(black);
+            mask-repeat: no-repeat;
+            mask-clip: padding-box, border-box;
+            mask-composite: subtract;
+            filter: saturate(2) brightness(1);
+        }
+
+        .glow::after {
+            --lit: 70%;
+            --sat: 100%;
+            --start: 15%;
+            --end: 35%;
+            border-width: calc(var(--radius) * 1.75);
+            border-radius: calc(var(--radius) * 2.75);
+            inset: calc(var(--radius) * -0.25);
+            z-index: 4;
+            opacity: 0.75;
+        }
+
+        .glow-bright {
+            --lit: 80%;
+            --sat: 100%;
+            --start: 13%;
+            --end: 37%;
+            
+            border-width: 5px;
+            border-radius: calc(var(--radius) + 2px);
+            inset: -7px;
+            left: auto;
+            filter: blur(2px) brightness(0.66);
+        }
+
+        .glow-bright::after {
+            content: none;
+        }
+
+        .glow-bright.glow-bottom {
+            inset: -7px;
+            right: auto;
+            top: auto;
+        }
+
+        .menu-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+            font-size: 0.875rem;
+        }
+
+        .menu-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5em;
+        }
+
+        .menu-divider {
+            width: 100%;
+            height: 0.5px;
+            background: var(--border-color);
+            border: none;
+            margin: 0.25em 0 0.5em;
+            opacity: 0.66;
+        }
+
+        .menu-header {
+            font-size: 0.75rem;
+            font-weight: 300;
+            padding: 0 0.66em;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            position: relative;
+            padding: 0.66em;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+            border-radius: calc(var(--radius) * 0.33333);
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: linear-gradient(
+                90deg, 
+                hsl(var(--hue1) 29% 13% / var(--item-opacity)),
+                hsl(var(--hue1) 30% 15% / var(--item-opacity)) 24% 32%, 
+                hsl(var(--hue1) 5% 7% / var(--item-opacity))
+            ) border-box;
+            --item-opacity: 0;
+        }
+
+        .menu-item::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: inherit;
+            background: linear-gradient(
+                90deg, 
+                hsl(var(--hue1) 15% 16% / var(--item-opacity)),
+                hsl(var(--hue1) 40% 24% / var(--item-opacity)) 20% 32%, 
+                hsl(var(--hue1) 2% 12% / var(--item-opacity))
+            ) border-box;
+            mask: linear-gradient(transparent), linear-gradient(black);
+            mask-repeat: no-repeat;
+            mask-clip: padding-box, border-box;
+            mask-composite: subtract;
+        }
+
+        .menu-item:hover,
+        .menu-item.selected {
+            --item-opacity: 0.5;
+            color: white;
+            transition: all 0.1s ease-out;
+        }
+
+        .menu-item.selected {
+            animation: flash 0.75s ease-out 1 forwards;
+        }
+
+        .menu-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .search-container {
+            display: grid;
+            grid-template: 1fr/1fr;
+            margin-bottom: 1em;
+            width: 100%;
+        }
+
+        .search-container > * {
+            grid-area: 1/1;
+            align-self: center;
+        }
+
+        .search-container svg {
+            margin-left: 0.5em;
+            opacity: 0.5;
+            width: 20px;
+            height: 20px;
+        }
+
+        .search-input {
+            font-family: 'Asap', sans-serif;
+            font-weight: 300;
+            padding: 0.5em 1em 0.5em 2.33em;
+            border: 1px solid hsl(var(--hue2) 13% 18.5% / 0.5);
+            background: hsl(var(--hue1) 0% 40% / 0.05);
+            border-radius: calc(var(--radius) * 0.33333);
+            color: white;
+            outline: none;
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        @keyframes glow {
+            0% { opacity: 0; }
+            3% { opacity: 1; }
+            10% { opacity: 0; }
+            12% { opacity: 0.7; }
+            16% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes glowoff {
+            to { opacity: 0; }
+        }
+
+        @keyframes flash {
+            0% { opacity: 0; --item-opacity: 0; }
+            7% { opacity: 0.5; --item-opacity: 1; }
+            14% { opacity: 0; --item-opacity: 0.5; }
+            21%, 100% { opacity: 1; --item-opacity: 1; }
+        }
+
+        @property --item-opacity {
+            syntax: "<number>";
+            inherits: false;
+            initial-value: 0;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .project-nav {
+                grid-template-columns: 1fr;
+            }
+            
+            #contextMenu {
+                min-width: 250px;
+                left: 10px;
+                right: 10px;
+                transform: translateY(-50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🌟 HaloAI Projects</h1>
+            <p>Advanced AI-Powered Applications with Neon Glass UI</p>
+        </header>
+
+        <div class="instructions">
+            <h3>🎯 Interactive Context Menu</h3>
+            <p><strong>Right-click anywhere</strong> on this page to open the beautiful neon glass context menu. You can customize the colors using the controls below and navigate between different HaloAI projects.</p>
+        </div>
+
+        <div class="project-nav">
+            <div class="project-card" onclick="selectProject('eaib')">
+                <h4>🤖 EAIB</h4>
+                <p>AI Bot Interface</p>
+            </div>
+            <div class="project-card" onclick="selectProject('motivabot')">
+                <h4>💪 MotivABot</h4>
+                <p>Motivation Assistant</p>
+            </div>
+            <div class="project-card" onclick="selectProject('superstar-broadcast-hub')">
+                <h4>📡 Broadcast Hub</h4>
+                <p>Content Distribution</p>
+            </div>
+            <div class="project-card" onclick="selectProject('retro-texting-app')">
+                <h4>📱 Retro Texting</h4>
+                <p>Vintage Messaging</p>
+            </div>
+            <div class="project-card" onclick="selectProject('family-dynasty-app')">
+                <h4>👨‍👩‍👧‍👦 Family Dynasty</h4>
+                <p>Genealogy Tracker</p>
+            </div>
+            <div class="project-card" onclick="selectProject('box-charade-app')">
+                <h4>🎭 Box Charade</h4>
+                <p>Interactive Game</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3>🎨 Customize Colors</h3>
+            <div class="color-control">
+                <label>Primary:</label>
+                <input type="range" id="hue1" min="0" max="360" value="255">
+                <span id="hue1-value">255°</span>
+            </div>
+            <div class="color-control">
+                <label>Secondary:</label>
+                <input type="range" id="hue2" min="0" max="360" value="222">
+                <span id="hue2-value">222°</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="open">
+        <span class="shine shine-top"></span>
+        <span class="shine shine-bottom"></span>
+        <span class="glow glow-top"></span>
+        <span class="glow glow-bottom"></span>
+        <span class="glow glow-bright glow-top"></span>
+        <span class="glow glow-bright glow-bottom"></span>
+        
+        <div class="menu-inner">
+            <div class="search-container">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+                <input type="text" class="search-input" placeholder="Search HaloAI projects...">
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header">🚀 Active Projects</div>
+                <ul class="menu-list">
+                    <li class="menu-item selected" onclick="navigateToProject('eaib')">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L1
