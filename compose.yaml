@@ -1,0 +1,6 @@
+services:
+  haloaistudios:
+    image: haloaistudios
+    build:
+      context: .
+      dockerfile: ./Dockerfile
